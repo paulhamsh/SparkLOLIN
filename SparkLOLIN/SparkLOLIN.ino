@@ -81,7 +81,7 @@ void connect() {
   }
 }
 
-unsigned long t;
+unsigned long t1, t2;
 int preset;
 int new_preset;
 
@@ -96,7 +96,7 @@ void setup() {
   Serial.println("Connecting...");
   connect();
   Serial.println("Connected");
-  t = millis();
+  t1 = t2 = millis();
   preset = 0;
   new_preset = 0;
 }
@@ -113,13 +113,15 @@ byte preset_cmd[] = {
 const int preset_cmd_size = 26;
 
 void loop() {
-  if (millis() - t > 5000) {
-    t = millis();
-
+  if (millis() - t1 > 5000) {
+    t1 = millis();
     // time process
     new_preset++;    
     if (new_preset > 3) new_preset = 0;
+  }
 
+  if (millis() - t2 > 100) {
+    t2 = millis();
     // GPIO process      
     for (int i = 0; i < 4; i++) {
       if (digitalRead(switchPins[i]) == 1) {
@@ -128,13 +130,13 @@ void loop() {
         Serial.println(i);
       }
     }
-
-    if (new_preset != preset) {    
-      preset = new_preset;
-      preset_cmd[preset_cmd_size-2] = preset;
-      Serial.print("Sent a preset change to ");
-      Serial.println(preset);
-      pChar1->writeValue(preset_cmd, preset_cmd_size);
-    }
+  }
+   
+  if (new_preset != preset) {    
+    preset = new_preset;
+    preset_cmd[preset_cmd_size-2] = preset;
+    Serial.print("Sent a preset change to ");
+    Serial.println(preset);
+    pChar1->writeValue(preset_cmd, preset_cmd_size);
   }
 }
